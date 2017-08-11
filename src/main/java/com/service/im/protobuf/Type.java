@@ -3,7 +3,7 @@ package com.service.im.protobuf;
 /**
  * 消息类型
  */
-public interface Type {
+public final class Type {
 
     /**
      * 应答
@@ -21,19 +21,20 @@ public interface Type {
     byte LOGOUT = 1;
 
     /**
-     * 单向消息(单聊消息)
-     */
-    byte SINGLE = 2;
-
-    /**
-     * 多向消息(群消息)
-     */
-    byte GROUP = 3;
-
-    /**
      * 推送消息
      */
     byte PUSH = 4;
 
+    public static final class Chat {
+        /**
+         * 单向消息(单聊消息)
+         */
+        byte SINGLE = 2;
+
+        /**
+         * 多向消息(群消息)
+         */
+        byte GROUP = 3;
+    }
 
 }

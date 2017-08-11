@@ -60,15 +60,13 @@ public class MessageProcessor implements Runnable {
     }
 
     private void processor(Packet packet) throws InvalidProtocolBufferException {
-        Protobuf.Message message = Protobuf.Message.parseFrom(packet.body);
-        System.out.println(new String(message.getContent().toByteArray()));
-//        System.out.println(Protobuf.Text.parseFrom(message.getContent().toByteArray()).getText());
-        packet.body = message.getContent().toByteArray();
-        packet.channel.writeAndFlush(packet);
-        packet.channel.flush();
-
+//        Protobuf.Message message = Protobuf.Message.parseFrom(packet.body);
+//        System.out.println(new String(message.getContent().toByteArray()));
+////        System.out.println(Protobuf.Text.parseFrom(message.getContent().toByteArray()).getText());
+//        packet.body = message.getContent().toByteArray();
+//        packet.channel.writeAndFlush(packet);
 //        Protobuf.Conversation conversation = Protobuf.Conversation.parseFrom(message.getContent());
-        switch (message.getType()) {
+//        switch (message.getType()) {
 //            case Type.LOGIN://连接发送登录验证成功后，移除未登录列表，并添加到登录列表，并且不要忘记设置Session的uid
 //                String token = new String(message.getContent().toByteArray());
 //                long uid = message.getSender();
@@ -83,7 +81,7 @@ public class MessageProcessor implements Runnable {
 //                Session.ONLINE_CHANNEL.put(uid, packet.channel);
 //                session.uid = uid;
 //                break;
-        }
+//        }
     }
 
     public void add(Packet packet) {
