@@ -2,7 +2,7 @@ syntax = "proto3";
 //option java_package = "com.service.im.protobuf";
 //option java_outer_classname = "Protobuf";
 
-message Message {
+message Body {
     string id = 1; //消息ID
     sint32 type = 2; //消息类型
     sint64 sender = 3; //发送者
@@ -10,15 +10,12 @@ message Message {
 }
 
 message Login {
-    string toke = 1;
+    sint64 uid = 1;
+    string toke = 2;
 }
 
-message Chat {
+message Message {
     sint64 receiver = 1; //接收者
     sint32 type = 2; //聊天消息类型
     string text = 3; //文本内容
-}
-
-message Push{
-
 }
