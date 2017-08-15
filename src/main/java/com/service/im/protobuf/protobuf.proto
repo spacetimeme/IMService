@@ -9,15 +9,14 @@ message Body {
     bytes content = 4; //内容,更具类型转换成相应类型
 }
 
-message ACK{
-    string id = 1;
-    sint32 code = 2;
-    string message = 3;
+message Login {
+    string toke = 1;
 }
 
-message Login {
-    sint64 uid = 1;
-    string toke = 2;
+message Response {
+    sint32 type = 1;//消息类型
+    sint32 code = 2;//相应状态码
+    string data = 3;//数据
 }
 
 message Message {

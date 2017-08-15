@@ -6,6 +6,7 @@ import com.service.im.protobuf.Type;
 import com.service.im.protocol.Packet;
 import com.service.im.session.Session;
 import com.service.im.work.MessageWork;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,18 +68,20 @@ public class MessageProcessor implements Runnable {
     private void processor(Packet packet) throws InvalidProtocolBufferException {
         Protobuf.Body body = Protobuf.Body.parseFrom(packet.body);
         long sender = body.getSender();
+        Session session = packet.channel.attr(Session.KEY).get();
+
         switch (body.getType()) {
             case Type.BODY_ACK:
-                work.doACK(body);
+                work.ack(body);
                 break;
             case Type.BODY_LOGIN:
-                if (work.doLogin(packet.channel, body)) {
-                    Session session = packet.channel.attr(Session.KEY).get();
-                    if (session.uid > 0 && (session.uid != sender)) {
-                        Session.ONLINE_CHANNEL.remove(session.uid);
-                        LOGGER.info("{} 重置用户连接! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
-                    } else {
-                        Session.OFFLINE_CHANNEL.remove(packet.channel);
+                Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
+                if (work.login(packet.channel, body.getId(), login)) {
+                    Session.OFFLINE_CHANNEL.remove(packet.channel);
+                    Channel channel = Session.ONLINE_CHANNEL.get(sender);
+                    if(channel != null){
+                        channel.close();
+                        Session.ONLINE_CHANNEL.remove(sender);
                     }
                     Session.ONLINE_CHANNEL.put(sender, packet.channel);
                     session.uid = sender;
@@ -86,7 +89,7 @@ public class MessageProcessor implements Runnable {
                 }
                 break;
             case Type.BODY_MESSAGE:
-                work.doMessage(packet.channel, body);
+                work.message(packet.channel, body);
                 break;
             case Type.BODY_LOGOUT:
 

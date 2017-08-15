@@ -14,16 +14,11 @@ public class Packet extends Protocol {
      */
     public byte[] body;
 
-    public Packet(){
+    public Packet() {
 
     }
 
-    public Packet(byte[] body){
-        this.body = body;
-    }
-
-    public Packet(Channel channel, byte[] body){
-        this.channel = channel;
+    public Packet(byte[] body) {
         this.body = body;
     }
 
