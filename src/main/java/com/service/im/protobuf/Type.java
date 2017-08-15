@@ -3,38 +3,41 @@ package com.service.im.protobuf;
 /**
  * 消息类型
  */
-public final class Type {
+public interface Type {
 
     /**
      * 应答
      */
-    byte ACK = -1;
+    byte BODY_ACK = -1;
 
     /**
      * 登录
      */
-    byte LOGIN = 0;
+    byte BODY_MESSAGE = 0;
+
+    /**
+     * 登录
+     */
+    byte BODY_LOGIN = 1;
 
     /**
      * 退出
      */
-    byte LOGOUT = 1;
+    byte BODY_LOGOUT = 2;
 
     /**
      * 推送消息
      */
-    byte PUSH = 4;
+    byte BODY_PUSH = 3;
 
-    public static final class Chat {
-        /**
-         * 单向消息(单聊消息)
-         */
-        byte SINGLE = 2;
+    /**
+     * 单向消息(单聊消息)
+     */
+    byte MESSAGE_SINGLE = 1;
 
-        /**
-         * 多向消息(群消息)
-         */
-        byte GROUP = 3;
-    }
+    /**
+     * 多向消息(群消息)
+     */
+    byte MESSAGE_GROUP = 2;
 
 }

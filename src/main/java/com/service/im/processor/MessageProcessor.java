@@ -2,7 +2,10 @@ package com.service.im.processor;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.service.im.protobuf.Protobuf;
+import com.service.im.protobuf.Type;
 import com.service.im.protocol.Packet;
+import com.service.im.session.Session;
+import com.service.im.work.MessageWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +39,8 @@ public class MessageProcessor implements Runnable {
      */
     private BlockingQueue<Packet> queue = new LinkedBlockingQueue<Packet>();
 
+    private MessageWork work = new MessageWork();
+
     public MessageProcessor(int id) {
         this.id = id;
         this.name = String.format("消息处理器 ID=%d", id);
@@ -60,28 +65,38 @@ public class MessageProcessor implements Runnable {
     }
 
     private void processor(Packet packet) throws InvalidProtocolBufferException {
-//        Protobuf.Message message = Protobuf.Message.parseFrom(packet.body);
-//        System.out.println(new String(message.getContent().toByteArray()));
-////        System.out.println(Protobuf.Text.parseFrom(message.getContent().toByteArray()).getText());
-//        packet.body = message.getContent().toByteArray();
-//        packet.channel.writeAndFlush(packet);
-//        Protobuf.Conversation conversation = Protobuf.Conversation.parseFrom(message.getContent());
-//        switch (message.getType()) {
-//            case Type.LOGIN://连接发送登录验证成功后，移除未登录列表，并添加到登录列表，并且不要忘记设置Session的uid
-//                String token = new String(message.getContent().toByteArray());
-//                long uid = message.getSender();
-//                Session session = packet.channel.attr(Session.KEY).get();
-//                if (session.uid > 0 && (session.uid != uid)) {
-//                    Session.ONLINE_CHANNEL.remove(session.uid);
-//                    LOGGER.info("{} 重置用户连接! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
-//                } else {
-//                    Session.OFFLINE_CHANNEL.remove(packet.channel);
-//                    LOGGER.info("{} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
-//                }
-//                Session.ONLINE_CHANNEL.put(uid, packet.channel);
-//                session.uid = uid;
-//                break;
-//        }
+        Protobuf.Body body = Protobuf.Body.parseFrom(packet.body);
+        long sender = body.getSender();
+        switch (body.getType()) {
+            case Type.BODY_ACK:
+                work.doACK(body);
+                break;
+            case Type.BODY_LOGIN:
+                if (work.doLogin(packet.channel, body)) {
+                    Session session = packet.channel.attr(Session.KEY).get();
+                    if (session.uid > 0 && (session.uid != sender)) {
+                        Session.ONLINE_CHANNEL.remove(session.uid);
+                        LOGGER.info("{} 重置用户连接! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
+                    } else {
+                        Session.OFFLINE_CHANNEL.remove(packet.channel);
+                    }
+                    Session.ONLINE_CHANNEL.put(sender, packet.channel);
+                    session.uid = sender;
+                    LOGGER.info("{} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
+                }
+                break;
+            case Type.BODY_MESSAGE:
+                work.doMessage(packet.channel, body);
+                break;
+            case Type.BODY_LOGOUT:
+
+                break;
+            case Type.BODY_PUSH:
+
+                break;
+            default:
+                break;
+        }
     }
 
     public void add(Packet packet) {

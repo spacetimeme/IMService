@@ -9,6 +9,12 @@ message Body {
     bytes content = 4; //内容,更具类型转换成相应类型
 }
 
+message ACK{
+    string id = 1;
+    sint32 code = 2;
+    string message = 3;
+}
+
 message Login {
     sint64 uid = 1;
     string toke = 2;
