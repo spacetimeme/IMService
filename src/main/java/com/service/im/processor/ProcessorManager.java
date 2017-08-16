@@ -82,7 +82,7 @@ public class ProcessorManager {
             }
         }
         if (processor != null) {
-            LOGGER.info("获取到 [{}] !", processor.getName());
+            LOGGER.debug("获取到 [{}] !", processor.getName());
         } else {
             LOGGER.error("未找到合适的处理器!");
             throw new NullPointerException("没有找到合适的处理器");

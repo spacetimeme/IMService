@@ -19,7 +19,7 @@ message Response {
 }
 
 message Message {
-    int64 receiver = 1; //接收者
+    int32 receiver = 1; //接收者
     int32 type = 2; //聊天消息类型
     bytes content = 3; //内容
 }

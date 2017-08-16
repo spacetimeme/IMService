@@ -4,9 +4,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.service.im.protobuf.BodyType;
 import com.service.im.protobuf.Protobuf;
 import com.service.im.protocol.Packet;
+import com.service.im.session.OnlineChannel;
 import com.service.im.session.Session;
 import com.service.im.work.MessageWork;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +50,11 @@ public class MessageProcessor implements Runnable {
     @Override
     public void run() {
         run = true;
-        LOGGER.info("启动 -> [{}]", name);
+        LOGGER.debug("启动 -> [{}]", name);
         while (run) {
             try {
                 Packet packet = queue.take();
-                LOGGER.info("[{}] 执行任务", name);
+                LOGGER.debug("[{}] 执行任务", name);
                 processor(packet);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -62,12 +62,16 @@ public class MessageProcessor implements Runnable {
             }
         }
         run = false;
-        LOGGER.info("结束 -> [{}]", name);
+        LOGGER.debug("结束 -> [{}]", name);
     }
 
     private void processor(Packet packet) throws InvalidProtocolBufferException {
         Protobuf.Body body = Protobuf.Body.parseFrom(packet.body);
-        long sender = body.getSender();
+        int sender = body.getSender();
+        if (sender <= 0) {
+            LOGGER.warn("发送方ID={}, 此包被丢弃！", sender);
+            return;
+        }
         Session session = packet.channel.attr(Session.KEY).get();
         switch (BodyType.getType(body.getType())) {
             case ACK:
@@ -76,15 +80,9 @@ public class MessageProcessor implements Runnable {
             case LOGIN:
                 Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
                 if (work.login(packet.channel, body.getId(), login)) {
-                    Session.OFFLINE_CHANNEL.remove(packet.channel);
-                    Channel channel = Session.ONLINE_CHANNEL.get(sender);
-                    if (channel != null) {
-                        channel.close();
-                        Session.ONLINE_CHANNEL.remove(sender);
-                    }
-                    Session.ONLINE_CHANNEL.put(sender, packet.channel);
+                    OnlineChannel.online(sender, packet.channel);
                     session.uid = sender;
-                    LOGGER.info("{} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
+                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
                 }
                 break;
             case MESSAGE:

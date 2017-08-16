@@ -3,6 +3,7 @@ package com.service.im;
 import com.service.im.processor.MessageProcessor;
 import com.service.im.processor.ProcessorManager;
 import com.service.im.protocol.Packet;
+import com.service.im.session.OnlineChannel;
 import com.service.im.session.Session;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,7 +30,7 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
             packet.channel = ctx.channel();
             MessageProcessor processor = manager.getMessageProcessor(packet.channel);
             if (processor != null) {
-                LOGGER.info("分配消息给 [{}]", processor.getName());
+                LOGGER.debug("分配消息给 [{}]", processor.getName());
                 processor.add(packet);
             } else {
                 LOGGER.error("无法给 {} 分配消息处理器，消息丢失！", packet.channel.remoteAddress().toString());
@@ -57,11 +58,10 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
-        Session.OFFLINE_CHANNEL.add(channel);
-        LOGGER.info("有新连接:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
+        OnlineChannel.connect(channel);
+        LOGGER.info("有新连接:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
         Attribute<Session> attribute = channel.attr(Session.KEY);
         if (attribute.get() == null) {
-            LOGGER.info("设置 {} 的Session", channel.remoteAddress().toString());
             Session session = new Session(System.currentTimeMillis());
             attribute.set(session);
         }
@@ -73,13 +73,12 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         Attribute<Session> attribute = channel.attr(Session.KEY);
         Session session = attribute.get();
         if (session != null) {
-            Session.ONLINE_CHANNEL.remove(session.uid);
-            if (Session.OFFLINE_CHANNEL.contains(channel)) {
-                Session.OFFLINE_CHANNEL.remove(channel);
-            }
+            OnlineChannel.disconnect(session.uid, channel);
             attribute.remove();
+        } else {
+            OnlineChannel.disconnect(channel);
         }
-        LOGGER.info("连接断开:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
+        LOGGER.info("连接断开:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
     }
 
 //    @Override

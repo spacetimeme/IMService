@@ -27,7 +27,7 @@ public class BuildPacket {
         return builder.build().toByteString();
     }
 
-    public static ByteString buildMessage(long receiver, MessageType type, ByteString content) {
+    public static ByteString buildMessage(int receiver, MessageType type, ByteString content) {
         Protobuf.Message.Builder builder = Protobuf.Message.newBuilder();
         builder.setReceiver(receiver);
         builder.setType(type.getTypeCode());

@@ -30,7 +30,7 @@
             <maxFileSize>5MB</maxFileSize>
         </triggeringPolicy>
     </appender>
-    <root level="trace">
+    <root level="info">
         <appender-ref ref="Console"/>
         <!--<appender-ref ref="File"/>-->
     </root>
