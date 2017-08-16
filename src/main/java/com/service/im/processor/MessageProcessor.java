@@ -1,8 +1,8 @@
 package com.service.im.processor;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.service.im.protobuf.BodyType;
 import com.service.im.protobuf.Protobuf;
-import com.service.im.protobuf.Type;
 import com.service.im.protocol.Packet;
 import com.service.im.session.Session;
 import com.service.im.work.MessageWork;
@@ -69,17 +69,16 @@ public class MessageProcessor implements Runnable {
         Protobuf.Body body = Protobuf.Body.parseFrom(packet.body);
         long sender = body.getSender();
         Session session = packet.channel.attr(Session.KEY).get();
-
-        switch (body.getType()) {
-            case Type.BODY_ACK:
+        switch (BodyType.getType(body.getType())) {
+            case ACK:
                 work.ack(body);
                 break;
-            case Type.BODY_LOGIN:
+            case LOGIN:
                 Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
                 if (work.login(packet.channel, body.getId(), login)) {
                     Session.OFFLINE_CHANNEL.remove(packet.channel);
                     Channel channel = Session.ONLINE_CHANNEL.get(sender);
-                    if(channel != null){
+                    if (channel != null) {
                         channel.close();
                         Session.ONLINE_CHANNEL.remove(sender);
                     }
@@ -88,14 +87,11 @@ public class MessageProcessor implements Runnable {
                     LOGGER.info("{} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", packet.channel.remoteAddress(), Session.ONLINE_CHANNEL.size(), Session.OFFLINE_CHANNEL.size());
                 }
                 break;
-            case Type.BODY_MESSAGE:
+            case MESSAGE:
                 work.message(packet.channel, body);
                 break;
-            case Type.BODY_LOGOUT:
-
-                break;
-            case Type.BODY_PUSH:
-
+            case LOGOUT:
+                work.logout(packet.channel, body);
                 break;
             default:
                 break;

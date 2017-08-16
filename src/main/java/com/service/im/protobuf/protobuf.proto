@@ -4,8 +4,8 @@ syntax = "proto3";
 
 message Body {
     string id = 1; //消息ID
-    sint32 type = 2; //消息类型
-    sint64 sender = 3; //发送者
+    int32 type = 2; //消息类型
+    int32 sender = 3; //发送者ID
     bytes content = 4; //内容,更具类型转换成相应类型
 }
 
@@ -14,13 +14,12 @@ message Login {
 }
 
 message Response {
-    sint32 type = 1;//消息类型
-    sint32 code = 2;//相应状态码
-    string data = 3;//数据
+    int32 code = 1;//相应状态码
+    bytes data = 2;//数据
 }
 
 message Message {
-    sint64 receiver = 1; //接收者
-    sint32 type = 2; //聊天消息类型
-    string text = 3; //文本内容
+    int64 receiver = 1; //接收者
+    int32 type = 2; //聊天消息类型
+    bytes content = 3; //内容
 }
