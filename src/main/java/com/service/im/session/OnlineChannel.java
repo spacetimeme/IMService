@@ -20,13 +20,17 @@ public class OnlineChannel extends ConcurrentHashMap<Integer, Channel> {
      */
     private static final Map<Integer, Channel> ONLINE_CHANNEL = new ConcurrentHashMap<>();
 
-    /**
+    /**110871906  123456789
      * 存放连接但未登录的Channel
      */
     public static final Vector<Channel> CONNECTED_CHANNEL = new Vector<>();
 
-    public static void online(Integer id, Channel channel) {
+    public static synchronized void online(Integer id, Channel channel) {
         CONNECTED_CHANNEL.remove(channel);
+        Channel c = ONLINE_CHANNEL.get(id);
+        if(c != null){
+            c.close();
+        }
         ONLINE_CHANNEL.put(id, channel);
     }
 
@@ -59,7 +63,7 @@ public class OnlineChannel extends ConcurrentHashMap<Integer, Channel> {
         return CONNECTED_CHANNEL.size();
     }
 
-    public static void timeOut(long timeOut) {
+    public synchronized static void timeOut(long timeOut) {
         Iterator<Channel> iterator = CONNECTED_CHANNEL.iterator();
         long currentTime = System.currentTimeMillis();
         while (iterator.hasNext()) {
