@@ -10,32 +10,32 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class OnlineChannel extends ConcurrentHashMap<Integer, Channel> {
+public class ChannelManager extends ConcurrentHashMap<Integer, Channel> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OnlineChannel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelManager.class);
 
     /**
      * 存放已登录的Channel
      * key是登录用户的编号UID
      */
-    private static final Map<Integer, Channel> ONLINE_CHANNEL = new ConcurrentHashMap<>();
+    private static final Map<Object, Channel> ONLINE_CHANNEL = new ConcurrentHashMap<>();
 
-    /**110871906  123456789
+    /**
      * 存放连接但未登录的Channel
      */
-    public static final Vector<Channel> CONNECTED_CHANNEL = new Vector<>();
+    private static final Vector<Channel> CONNECTED_CHANNEL = new Vector<>();
 
-    public static synchronized void online(Integer id, Channel channel) {
+    public static synchronized void online(Object key, Channel channel) {
         CONNECTED_CHANNEL.remove(channel);
-        Channel c = ONLINE_CHANNEL.get(id);
+        Channel c = ONLINE_CHANNEL.get(key);
         if(c != null){
             c.close();
         }
-        ONLINE_CHANNEL.put(id, channel);
+        ONLINE_CHANNEL.put(key, channel);
     }
 
-    public static Channel getOnlineChannel(Integer id) {
-        return ONLINE_CHANNEL.get(id);
+    public static Channel getOnlineChannel(Object key) {
+        return ONLINE_CHANNEL.get(key);
     }
 
     public static void connect(Channel channel) {
@@ -43,12 +43,12 @@ public class OnlineChannel extends ConcurrentHashMap<Integer, Channel> {
     }
 
     public static void disconnect(Channel channel) {
-        disconnect(-1, channel);
+        disconnect(null, channel);
     }
 
-    public static void disconnect(Integer id, Channel channel) {
-        if (id > 0) {
-            ONLINE_CHANNEL.remove(id);
+    public static void disconnect(Object key, Channel channel) {
+        if (key != null) {
+            ONLINE_CHANNEL.remove(key);
         }
         if (channel != null) {
             CONNECTED_CHANNEL.remove(channel);

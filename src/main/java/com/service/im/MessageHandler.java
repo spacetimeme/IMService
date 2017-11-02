@@ -3,7 +3,7 @@ package com.service.im;
 import com.service.im.processor.MessageProcessor;
 import com.service.im.processor.ProcessorManager;
 import com.service.im.protocol.Packet;
-import com.service.im.session.OnlineChannel;
+import com.service.im.session.ChannelManager;
 import com.service.im.session.Session;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -58,13 +58,14 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
-        OnlineChannel.connect(channel);
-        LOGGER.info("有新连接:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
         Attribute<Session> attribute = channel.attr(Session.KEY);
         if (attribute.get() == null) {
-            Session session = new Session(System.currentTimeMillis());
-            attribute.set(session);
+            LOGGER.info("创建Session -> {}", channel.remoteAddress().toString());
+            attribute.set(new Session(System.currentTimeMillis()));
         }
+        ChannelManager.connect(channel);
+        LOGGER.info("有新连接:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), ChannelManager.getOnlineSize(), ChannelManager.getConnectSize());
+
     }
 
     @Override
@@ -73,12 +74,13 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
         Attribute<Session> attribute = channel.attr(Session.KEY);
         Session session = attribute.get();
         if (session != null) {
-            OnlineChannel.disconnect(session.uid, channel);
+            ChannelManager.disconnect(session.uid, channel);
             attribute.remove();
+            attribute.set(null);
         } else {
-            OnlineChannel.disconnect(channel);
+            ChannelManager.disconnect(channel);
         }
-        LOGGER.info("连接断开:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
+        LOGGER.info("连接断开:{} -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress(), ChannelManager.getOnlineSize(), ChannelManager.getConnectSize());
     }
 
 //    @Override

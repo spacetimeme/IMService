@@ -61,7 +61,7 @@ public class ProcessorManager {
      * 可能需要同步
      * @return 任务处理器
      */
-    public MessageProcessor getMessageProcessor() {
+    private MessageProcessor getMessageProcessor() {
         int min = Integer.MAX_VALUE;
         Collection<MessageProcessor> collection = processors.values();
         MessageProcessor processor = null;
@@ -94,7 +94,7 @@ public class ProcessorManager {
      * 开启所有处理器
      */
     public void start() {
-        for (int i = 0; i < SIZE; i++) {
+        for (int i = 1; i <= SIZE; i++) {
             MessageProcessor processor = new MessageProcessor(i);
             processors.put(i, processor);
             processorPool.execute(processor);
@@ -110,7 +110,7 @@ public class ProcessorManager {
     public MessageProcessor getMessageProcessor(Channel channel) {
         Session session = channel.attr(Session.KEY).get();
         MessageProcessor processor;
-        if (session.processorId < 0) {
+        if (session.processorId <= 0) {
             processor = getMessageProcessor();
             session.processorId = processor.getId();
         } else {

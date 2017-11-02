@@ -4,7 +4,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.service.im.protobuf.BodyType;
 import com.service.im.protobuf.Protobuf;
 import com.service.im.protocol.Packet;
-import com.service.im.session.OnlineChannel;
+import com.service.im.session.ChannelManager;
 import com.service.im.session.Session;
 import com.service.im.work.MessageWork;
 import org.slf4j.Logger;
@@ -54,8 +54,10 @@ public class MessageProcessor implements Runnable {
         while (run) {
             try {
                 Packet packet = queue.take();
-                LOGGER.debug("[{}] 执行任务", name);
-                processor(packet);
+                if(run){
+                    LOGGER.debug("[{}] 执行任务", name);
+                    processor(packet);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error("[{}] 消息处理发生异常! {}", name, e);
@@ -80,9 +82,9 @@ public class MessageProcessor implements Runnable {
             case LOGIN:
                 Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
                 if (work.login(packet.channel, body.getId(), login)) {
-                    OnlineChannel.online(sender, packet.channel);
+                    ChannelManager.online(sender, packet.channel);
                     session.uid = sender;
-                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), OnlineChannel.getOnlineSize(), OnlineChannel.getConnectSize());
+                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), ChannelManager.getOnlineSize(), ChannelManager.getConnectSize());
                 }
                 break;
             case MESSAGE:

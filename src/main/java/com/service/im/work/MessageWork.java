@@ -6,7 +6,7 @@ import com.service.im.protobuf.BuildPacket;
 import com.service.im.protobuf.MessageType;
 import com.service.im.protobuf.Protobuf;
 import com.service.im.protocol.Packet;
-import com.service.im.session.OnlineChannel;
+import com.service.im.session.ChannelManager;
 import io.netty.channel.Channel;
 
 public class MessageWork {
@@ -36,7 +36,7 @@ public class MessageWork {
             channel.writeAndFlush(packet);
 
             Protobuf.Message message = Protobuf.Message.parseFrom(body.getContent());
-            channel = OnlineChannel.getOnlineChannel(message.getReceiver());
+            channel = ChannelManager.getOnlineChannel(message.getReceiver());
             if (channel != null) {
                 ByteString bs = BuildPacket.buildMessage(0, MessageType.SINGLE, message.getContent());
                 packet = BuildPacket.buildBody(body.getId(), BodyType.MESSAGE, body.getSender(), bs);
