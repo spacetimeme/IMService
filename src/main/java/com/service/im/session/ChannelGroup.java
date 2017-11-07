@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChannelManager extends ConcurrentHashMap<Integer, Channel> {
+public class ChannelGroup {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelGroup.class);
 
     /**
      * 存放已登录的Channel
@@ -28,7 +28,7 @@ public class ChannelManager extends ConcurrentHashMap<Integer, Channel> {
     public static synchronized void online(Object key, Channel channel) {
         CONNECTED_CHANNEL.remove(channel);
         Channel c = ONLINE_CHANNEL.get(key);
-        if(c != null){
+        if (c != null) {
             c.close();
         }
         ONLINE_CHANNEL.put(key, channel);
@@ -38,7 +38,7 @@ public class ChannelManager extends ConcurrentHashMap<Integer, Channel> {
         return ONLINE_CHANNEL.get(key);
     }
 
-    public static void connect(Channel channel) {
+    public static void connected(Channel channel) {
         CONNECTED_CHANNEL.add(channel);
     }
 
@@ -59,11 +59,11 @@ public class ChannelManager extends ConcurrentHashMap<Integer, Channel> {
         return ONLINE_CHANNEL.size();
     }
 
-    public static int getConnectSize() {
+    public static int getConnectedSize() {
         return CONNECTED_CHANNEL.size();
     }
 
-    public synchronized static void timeOut(long timeOut) {
+    public synchronized static void checkConnectedTimeOutChannel(long timeOut) {
         Iterator<Channel> iterator = CONNECTED_CHANNEL.iterator();
         long currentTime = System.currentTimeMillis();
         while (iterator.hasNext()) {

@@ -1,7 +1,6 @@
 package com.service.im.processor;
 
 import com.service.im.session.Session;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +58,7 @@ public class ProcessorManager {
     /**
      * 获取相对空闲的消息处理器,就是查找处理任务少的
      * 可能需要同步
+     *
      * @return 任务处理器
      */
     private MessageProcessor getMessageProcessor() {
@@ -107,8 +107,7 @@ public class ProcessorManager {
      *
      * @return
      */
-    public MessageProcessor getMessageProcessor(Channel channel) {
-        Session session = channel.attr(Session.KEY).get();
+    public MessageProcessor getMessageProcessor(Session session) {
         MessageProcessor processor;
         if (session.processorId <= 0) {
             processor = getMessageProcessor();

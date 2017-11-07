@@ -4,7 +4,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.service.im.protobuf.BodyType;
 import com.service.im.protobuf.Protobuf;
 import com.service.im.protocol.Packet;
-import com.service.im.session.ChannelManager;
+import com.service.im.session.ChannelGroup;
 import com.service.im.session.Session;
 import com.service.im.work.MessageWork;
 import org.slf4j.Logger;
@@ -74,7 +74,6 @@ public class MessageProcessor implements Runnable {
             LOGGER.warn("发送方ID={}, 此包被丢弃！", sender);
             return;
         }
-        Session session = packet.channel.attr(Session.KEY).get();
         switch (BodyType.getType(body.getType())) {
             case ACK:
                 work.ack(body);
@@ -82,9 +81,10 @@ public class MessageProcessor implements Runnable {
             case LOGIN:
                 Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
                 if (work.login(packet.channel, body.getId(), login)) {
-                    ChannelManager.online(sender, packet.channel);
+                    ChannelGroup.online(sender, packet.channel);
+                    Session session = packet.channel.attr(Session.KEY).get();
                     session.uid = sender;
-                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), ChannelManager.getOnlineSize(), ChannelManager.getConnectSize());
+                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), ChannelGroup.getOnlineSize(), ChannelGroup.getConnectedSize());
                 }
                 break;
             case MESSAGE:
