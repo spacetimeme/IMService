@@ -77,7 +77,6 @@ public class MessageProcessor implements Runnable {
 
     public void stop() {
         run = false;
-        queue.add(new Body(null));
     }
 
     public String getName() {

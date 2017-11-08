@@ -27,19 +27,12 @@ public class MessageDecoder extends ByteToMessageDecoder {
             ctx.close();
             return;
         }
-        byte version = in.readByte();   //协议版本
         int length = in.readInt();  //包总长度
         in.readBytes(Protocol.RETAIN);  //保留数组
-        byte verify = in.readByte();    //包头校验
-        if(verify != '-'){
-            LOGGER.error("包头校验失败! 符号{}={} ", verify, (char)verify);
-            ctx.close();
-            return;
-        }
         if (length > canReadLength) {
             //包总长度大于可读包长度则表示包不完整,继续等待下半部分
             in.resetReaderIndex();
-            LOGGER.error("可读长度小于包长度[包长度={},可读长度={}] -> {}", length, canReadLength, ctx.channel().remoteAddress());
+            LOGGER.warn("可读长度小于包长度[包长度={},可读长度={}] -> {}", length, canReadLength, ctx.channel().remoteAddress());
             return;
         }
         int bodyLength = length - Protocol.HEADER_LENGTH;//计算内容长度
@@ -51,8 +44,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
             LOGGER.error("错误的结束标记 {}", ctx.channel().remoteAddress());
             return;
         }
-        Body body = new Body(bodyArray);
-        body.version = version;
-        out.add(body);
+        out.add(new Body(ctx.channel(), bodyArray));
     }
 }

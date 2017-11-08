@@ -27,13 +27,12 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Body) {
             Body body = (Body) msg;
-            body.channel = ctx.channel();
-            MessageProcessor processor = manager.getMessageProcessor(body.channel.attr(Session.KEY).get());
+            MessageProcessor processor = manager.getMessageProcessor(body.getSession());
             if (processor != null) {
                 LOGGER.debug("分配消息给 [{}]", processor.getName());
                 processor.add(body);
             } else {
-                LOGGER.error("无法给 {} 分配消息处理器，消息丢失！", body.channel.remoteAddress().toString());
+                LOGGER.error("无法给 {} 分配消息处理器，消息丢失！", body.getChannel().remoteAddress().toString());
             }
         }
     }

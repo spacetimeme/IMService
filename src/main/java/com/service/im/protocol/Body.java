@@ -1,33 +1,46 @@
 package com.service.im.protocol;
 
+import com.service.im.session.Session;
 import io.netty.channel.Channel;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class Body<T> implements Protocol {
+public class Body implements Protocol {
 
-    /**
-     * 当前消息的管道
-     */
-    public Channel channel;
+    private static final Map<Integer, Class<?>> BODY_TYPE_MAP = new HashMap<>();
+    private Channel channel;
+    private Session session;
+    private ByteBuffer buffer;
+    private int type;
 
-    public int version;
+    public Body(Channel channel, byte[] body) {
+        this.channel = channel;
+        this.buffer = ByteBuffer.wrap(body);
+        this.session = channel.attr(Session.KEY).get();
+        this.buffer.flip();
+        this.type = this.buffer.getInt();
+    }
 
-    private byte[] body;
+    public static void register(int type, Class<?> clazz) {
+        BODY_TYPE_MAP.put(type, clazz);
+    }
 
-    public Body(byte[] body) {
-        this.body = body;
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public Session getSession() {
+        return session;
     }
 
     public byte[] getArray() {
-        return body;
+        return buffer.array();
     }
 
     public int getLength() {
-        return body.length;
+        return buffer.capacity();
     }
 
-    public abstract T decode(ByteBuffer buffer);
-
-    public abstract ByteBuffer encode(T t);
 }
