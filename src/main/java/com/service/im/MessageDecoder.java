@@ -1,6 +1,6 @@
 package com.service.im;
 
-import com.service.im.protocol.Packet;
+import com.service.im.protocol.Body;
 import com.service.im.protocol.Protocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,17 +43,16 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
         int bodyLength = length - Protocol.HEADER_LENGTH;//计算内容长度
-        byte[] body = new byte[bodyLength];
-        in.readBytes(body);//内容
+        byte[] bodyArray = new byte[bodyLength];
+        in.readBytes(bodyArray);//内容
         byte end = in.readByte();       //结束标记
         if (end != Protocol.END_TAG) {
             ctx.close();
             LOGGER.error("错误的结束标记 {}", ctx.channel().remoteAddress());
             return;
         }
-        Packet packet = new Packet();
-        packet.version = version;
-        packet.body = body;
-        out.add(packet);
+        Body body = new Body(bodyArray);
+        body.version = version;
+        out.add(body);
     }
 }

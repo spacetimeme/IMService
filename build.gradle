@@ -15,12 +15,9 @@ repositories {
 dependencies {
     compile "io.netty:netty-handler:4.1.14.Final"
     compile "ch.qos.logback:logback-classic:1.2.3"
-    compile "com.google.protobuf:protobuf-java:3.3.1"
     compile "redis.clients:jedis:2.9.0"
     compile "mysql:mysql-connector-java:6.0.6"
     compile "com.alibaba:druid:1.1.2"
     compile "com.alibaba:fastjson:1.2.36"
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile 'org.jsoup:jsoup:1.10.3'
     testCompile "junit:junit:4.12"
 }

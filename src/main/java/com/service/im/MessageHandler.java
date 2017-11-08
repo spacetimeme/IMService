@@ -2,7 +2,7 @@ package com.service.im;
 
 import com.service.im.processor.MessageProcessor;
 import com.service.im.processor.ProcessorManager;
-import com.service.im.protocol.Packet;
+import com.service.im.protocol.Body;
 import com.service.im.session.ChannelGroup;
 import com.service.im.session.Session;
 import io.netty.channel.Channel;
@@ -25,15 +25,15 @@ public class MessageHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof Packet) {
-            Packet packet = (Packet) msg;
-            packet.channel = ctx.channel();
-            MessageProcessor processor = manager.getMessageProcessor(packet.channel.attr(Session.KEY).get());
+        if (msg instanceof Body) {
+            Body body = (Body) msg;
+            body.channel = ctx.channel();
+            MessageProcessor processor = manager.getMessageProcessor(body.channel.attr(Session.KEY).get());
             if (processor != null) {
                 LOGGER.debug("分配消息给 [{}]", processor.getName());
-                processor.add(packet);
+                processor.add(body);
             } else {
-                LOGGER.error("无法给 {} 分配消息处理器，消息丢失！", packet.channel.remoteAddress().toString());
+                LOGGER.error("无法给 {} 分配消息处理器，消息丢失！", body.channel.remoteAddress().toString());
             }
         }
     }

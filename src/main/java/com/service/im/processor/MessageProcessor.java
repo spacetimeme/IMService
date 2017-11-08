@@ -1,12 +1,6 @@
 package com.service.im.processor;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.service.im.protobuf.BodyType;
-import com.service.im.protobuf.Protobuf;
-import com.service.im.protocol.Packet;
-import com.service.im.session.ChannelGroup;
-import com.service.im.session.Session;
-import com.service.im.work.MessageWork;
+import com.service.im.protocol.Body;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +32,7 @@ public class MessageProcessor implements Runnable {
     /**
      * 未处理消息队列
      */
-    private BlockingQueue<Packet> queue = new LinkedBlockingQueue<Packet>();
-
-    private MessageWork work = new MessageWork();
+    private BlockingQueue<Body> queue = new LinkedBlockingQueue<Body>();
 
     public MessageProcessor(int id) {
         this.id = id;
@@ -53,10 +45,10 @@ public class MessageProcessor implements Runnable {
         LOGGER.debug("启动 -> [{}]", name);
         while (run) {
             try {
-                Packet packet = queue.take();
-                if(run){
+                Body body = queue.take();
+                if (run) {
                     LOGGER.debug("[{}] 执行任务", name);
-                    processor(packet);
+                    processor(body);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -67,39 +59,12 @@ public class MessageProcessor implements Runnable {
         LOGGER.debug("结束 -> [{}]", name);
     }
 
-    private void processor(Packet packet) throws InvalidProtocolBufferException {
-        Protobuf.Body body = Protobuf.Body.parseFrom(packet.body);
-        int sender = body.getSender();
-        if (sender <= 0) {
-            LOGGER.warn("发送方ID={}, 此包被丢弃！", sender);
-            return;
-        }
-        switch (BodyType.getType(body.getType())) {
-            case ACK:
-                work.ack(body);
-                break;
-            case LOGIN:
-                Protobuf.Login login = Protobuf.Login.parseFrom(body.getContent());
-                if (work.login(packet.channel, body.getId(), login)) {
-                    ChannelGroup.online(sender, packet.channel);
-                    Session session = packet.channel.attr(Session.KEY).get();
-                    session.uid = sender;
-                    LOGGER.info("uid={} -> {} 验证登录连接成功! 当前在线人数{}个, 未登录连接数{}个", sender, packet.channel.remoteAddress(), ChannelGroup.getOnlineSize(), ChannelGroup.getConnectedSize());
-                }
-                break;
-            case MESSAGE:
-                work.message(packet.channel, body);
-                break;
-            case LOGOUT:
-                work.logout(packet.channel, body);
-                break;
-            default:
-                break;
-        }
+    private void processor(Body body) {
+
     }
 
-    public void add(Packet packet) {
-        queue.add(packet);
+    public void add(Body body) {
+        queue.add(body);
     }
 
     public int size() {
@@ -112,7 +77,7 @@ public class MessageProcessor implements Runnable {
 
     public void stop() {
         run = false;
-        queue.add(new Packet());
+        queue.add(new Body(null));
     }
 
     public String getName() {
