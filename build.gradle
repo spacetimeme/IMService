@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    compile "io.netty:netty-handler:4.1.14.Final"
+    compile "io.netty:netty-handler:4.1.16.Final"
     compile "ch.qos.logback:logback-classic:1.2.3"
     compile "redis.clients:jedis:2.9.0"
     compile "mysql:mysql-connector-java:6.0.6"
