@@ -28,13 +28,14 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
         int length = in.readInt();  //包总长度
-        short type = in.readShort();
         if (length > canReadLength) {
             //包总长度大于可读包长度则表示包不完整,继续等待下半部分
             in.resetReaderIndex();
             LOGGER.warn("可读长度小于包长度[包长度={},可读长度={}] -> {}", length, canReadLength, ctx.channel().remoteAddress());
             return;
         }
+        int type = in.readInt(); //包类型
+        in.readBytes(Protocol.RETAIN); //读保留头
         int bodyLength = length - Protocol.HEADER_LENGTH;//计算内容长度
         if (bodyLength < 0) {
             LOGGER.error("body长度不正确 {}", bodyLength);

@@ -7,16 +7,16 @@ public class Body implements Protocol {
 
     private Channel channel;
     private Session session;
-    private short type;
+    private int type;
     private byte[] body;
 
-    public Body(Channel channel, short type, byte[] body) {
+    public Body(Channel channel, int type, byte[] body) {
         this.channel = channel;
         this.type = type;
         this.body = body;
     }
 
-    public Body(short type, byte[] body) {
+    public Body(int type, byte[] body) {
         this.type = type;
         this.body = body;
     }
@@ -35,7 +35,7 @@ public class Body implements Protocol {
         return session;
     }
 
-    public short getType() {
+    public int getType() {
         return type;
     }
 
