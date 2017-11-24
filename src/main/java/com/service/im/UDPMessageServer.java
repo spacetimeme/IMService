@@ -34,7 +34,6 @@ public class UDPMessageServer {
                             ByteBuf out = Unpooled.buffer();
                             out.writeByte(Protocol.START_TAG);  //起始标记
                             out.writeInt(Protocol.HEADER_LENGTH + bytes.length);//包总长度
-                            out.writeBytes(Protocol.RETAIN);    //包头保留数组
                             out.writeBytes(bytes);        //内容
                             out.writeByte(Protocol.END_TAG);    //结束标记
                             DatagramPacket dp = new DatagramPacket(out, packet.sender());

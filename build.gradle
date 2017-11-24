@@ -13,11 +13,12 @@ repositories {
 }
 
 dependencies {
-    compile "io.netty:netty-handler:4.1.16.Final"
+    compile "io.netty:netty-handler:4.1.17.Final"
     compile "ch.qos.logback:logback-classic:1.2.3"
     compile "redis.clients:jedis:2.9.0"
     compile "mysql:mysql-connector-java:6.0.6"
-    compile "com.alibaba:druid:1.1.2"
-    compile "com.alibaba:fastjson:1.2.36"
+    compile "com.alibaba:druid:1.1.5"
+    compile "com.alibaba:fastjson:1.2.41"
     testCompile "junit:junit:4.12"
+    testCompile 'com.github.spacetimeme:dream-socket:2.0.0'
 }

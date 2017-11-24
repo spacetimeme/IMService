@@ -60,7 +60,11 @@ public class MessageProcessor implements Runnable {
     }
 
     private void processor(Body body) {
-
+        switch (body.getType()) {
+            default:
+                body.getChannel().writeAndFlush(new Body((short) 0, (new String(body.getBody()) + " from server").getBytes()));
+                break;
+        }
     }
 
     public void add(Body body) {

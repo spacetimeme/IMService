@@ -28,7 +28,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
         int length = in.readInt();  //包总长度
-        in.readBytes(Protocol.RETAIN);  //保留数组
+        short type = in.readShort();
         if (length > canReadLength) {
             //包总长度大于可读包长度则表示包不完整,继续等待下半部分
             in.resetReaderIndex();
@@ -36,14 +36,19 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
         int bodyLength = length - Protocol.HEADER_LENGTH;//计算内容长度
-        byte[] bodyArray = new byte[bodyLength];
-        in.readBytes(bodyArray);//内容
+        if (bodyLength < 0) {
+            LOGGER.error("body长度不正确 {}", bodyLength);
+            ctx.close();
+            return;
+        }
+        byte[] body = new byte[bodyLength];
+        in.readBytes(body);//内容
         byte end = in.readByte();       //结束标记
         if (end != Protocol.END_TAG) {
             ctx.close();
             LOGGER.error("错误的结束标记 {}", ctx.channel().remoteAddress());
             return;
         }
-        out.add(new Body(ctx.channel(), bodyArray));
+        out.add(new Body(ctx.channel(), type, body));
     }
 }

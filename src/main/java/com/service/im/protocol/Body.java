@@ -3,28 +3,22 @@ package com.service.im.protocol;
 import com.service.im.session.Session;
 import io.netty.channel.Channel;
 
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
 public class Body implements Protocol {
 
-    private static final Map<Integer, Class<?>> BODY_TYPE_MAP = new HashMap<>();
     private Channel channel;
     private Session session;
-    private ByteBuffer buffer;
-    private int type;
+    private short type;
+    private byte[] body;
 
-    public Body(Channel channel, byte[] body) {
+    public Body(Channel channel, short type, byte[] body) {
         this.channel = channel;
-        this.buffer = ByteBuffer.wrap(body);
-        this.session = channel.attr(Session.KEY).get();
-        this.buffer.flip();
-        this.type = this.buffer.getInt();
+        this.type = type;
+        this.body = body;
     }
 
-    public static void register(int type, Class<?> clazz) {
-        BODY_TYPE_MAP.put(type, clazz);
+    public Body(short type, byte[] body) {
+        this.type = type;
+        this.body = body;
     }
 
     public Channel getChannel() {
@@ -32,15 +26,20 @@ public class Body implements Protocol {
     }
 
     public Session getSession() {
+        if (channel == null) {
+            return null;
+        }
+        if (session == null) {
+            session = channel.attr(Session.KEY).get();
+        }
         return session;
     }
 
-    public byte[] getArray() {
-        return buffer.array();
+    public short getType() {
+        return type;
     }
 
-    public int getLength() {
-        return buffer.capacity();
+    public byte[] getBody() {
+        return body;
     }
-
 }
