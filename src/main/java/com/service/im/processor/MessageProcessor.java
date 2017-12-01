@@ -1,6 +1,8 @@
 package com.service.im.processor;
 
+import com.service.im.message.StringBody;
 import com.service.im.protocol.Body;
+import com.service.im.session.ChannelGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +63,16 @@ public class MessageProcessor implements Runnable {
 
     private void processor(Body body) {
         switch (body.getType()) {
+            case 0:
+                ChannelGroup.online(body.getSender(), body.getChannel());
+                break;
+            case 1:
+                break;
+            case Body.TYPE_STRING:
+                body.getChannel().writeAndFlush(new StringBody(new String(body.getBody()), 0, body.getSender()));
+                break;
             default:
-                body.getChannel().writeAndFlush(new Body((short) 0, (new String(body.getBody()) + " from server").getBytes()));
+
                 break;
         }
     }

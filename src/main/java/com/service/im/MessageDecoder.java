@@ -14,6 +14,14 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageDecoder.class);
 
+    //{起始标记   -byte     - 1}
+    //{包总长度   -int      - 4}
+    //{包的类型   -int      - 4}
+    //{发送者ID   -int      - 4}
+    //{接受者ID   -int      - 4}
+    //{消息ID    -byte[32] - 32}
+    //{包体内容   -byte[n]  - n}
+    //{结束标记   -byte     - 1}
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         int canReadLength = in.readableBytes();
@@ -35,7 +43,10 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
         int type = in.readInt(); //包类型
-        in.readBytes(Protocol.RETAIN); //读保留头
+        int sender = in.readInt();
+        int recipient = in.readInt();
+        byte[] idBytes = new byte[Protocol.ID_LENGTH];
+        in.readBytes(idBytes);
         int bodyLength = length - Protocol.HEADER_LENGTH;//计算内容长度
         if (bodyLength < 0) {
             LOGGER.error("body长度不正确 {}", bodyLength);
@@ -50,6 +61,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
             LOGGER.error("错误的结束标记 {}", ctx.channel().remoteAddress());
             return;
         }
-        out.add(new Body(ctx.channel(), type, body));
+        out.add(new Body(ctx.channel(), idBytes, type, sender, recipient, body));
     }
 }
