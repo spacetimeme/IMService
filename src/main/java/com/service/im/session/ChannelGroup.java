@@ -32,6 +32,7 @@ public class ChannelGroup {
             c.close();
         }
         ONLINE_CHANNEL.put(key, channel);
+        LOGGER.info("{}验证成功 -> 当前在线人数{}个, 未登录连接数{}个", channel.remoteAddress().toString(), ChannelGroup.getOnlineSize(), ChannelGroup.getConnectedSize());
     }
 
     public static Channel getOnlineChannel(Object key) {
