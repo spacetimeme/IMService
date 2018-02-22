@@ -9,7 +9,7 @@
             <!--<pattern>[%date] [${thread} %thread] [%-5level] [${class} %logger{36}] - [${method} %method] ${tip} %msg%n</pattern>-->
             <pattern>[%date] ${tip} %msg%n</pattern>
         </encoder>
-        <target>System.err</target>
+        <!--<target>System.err</target>-->
     </appender>
     <appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/log.log</file>
